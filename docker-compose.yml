@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vaultra-postgres
+    environment:
+      POSTGRES_USER: vaultra
+      POSTGRES_PASSWORD: vaultra
+      POSTGRES_DB: vaultra
+    ports:
+      - "5432:5432"
+    volumes:
+      - vaultra_pg:/var/lib/postgresql/data
+
+volumes:
+  vaultra_pg:
