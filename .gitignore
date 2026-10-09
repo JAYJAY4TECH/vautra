@@ -6,3 +6,9 @@ dist
 *.log
 .DS_Store
 coverage
+
+# Node version manager leftovers
+.nvm
+
+# TypeScript build cache
+*.tsbuildinfo
