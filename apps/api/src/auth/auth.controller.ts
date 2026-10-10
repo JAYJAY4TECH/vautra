@@ -6,8 +6,6 @@ import { AuthService } from './auth.service';
 class RegisterDto {
   @IsEmail() email!: string;
   @IsString() @MinLength(8) password!: string;
-  @IsString() @MinLength(1) firstName!: string;
-  @IsString() @MinLength(1) lastName!: string;
   @IsOptional() @IsString() referralCode?: string;
 }
 
@@ -22,13 +20,7 @@ export class AuthController {
 
   @Post('register')
   register(@Body() dto: RegisterDto) {
-    return this.auth.register(
-      dto.email,
-      dto.password,
-      dto.firstName,
-      dto.lastName,
-      dto.referralCode,
-    );
+    return this.auth.register(dto.email, dto.password, dto.referralCode);
   }
 
   @Post('login')

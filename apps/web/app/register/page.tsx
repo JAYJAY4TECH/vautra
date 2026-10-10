@@ -7,8 +7,6 @@ import { api } from '@/lib/api';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [referralCode, setReferralCode] = useState('');
@@ -21,8 +19,6 @@ export default function RegisterPage() {
     setError('');
     try {
       const { data } = await api.post('/auth/register', {
-        firstName,
-        lastName,
         email,
         password,
         referralCode: referralCode || undefined,
@@ -37,7 +33,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-10">
+    <main className="min-h-screen flex items-center justify-center px-6">
       <form
         onSubmit={submit}
         className="w-full max-w-md bg-white/5 border border-white/10 rounded-2xl p-8 space-y-5"
@@ -47,34 +43,6 @@ export default function RegisterPage() {
             Vault<span className="text-brand-500">ra</span>
           </Link>
           <h1 className="mt-3 text-xl font-semibold">Create your account</h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Tell us a little about yourself
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="text-sm text-slate-400">First name</label>
-            <input
-              type="text"
-              required
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-slate-900 border border-white/10 focus:border-brand-500 outline-none transition"
-              placeholder="John"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm text-slate-400">Last name</label>
-            <input
-              type="text"
-              required
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-slate-900 border border-white/10 focus:border-brand-500 outline-none transition"
-              placeholder="Doe"
-            />
-          </div>
         </div>
 
         <div className="space-y-1">
