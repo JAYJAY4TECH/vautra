@@ -48,10 +48,11 @@ export default function DashboardPage() {
   const [wallets, setWallets] = useState<WalletRow[]>([]);
   const [balance, setBalance] = useState(0);
   const [myReferral, setMyReferral] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
 
-  // modal state
   const [modalPlan, setModalPlan] = useState<Plan | null>(null);
   const [amount, setAmount] = useState('');
   const [modalError, setModalError] = useState('');
@@ -82,6 +83,8 @@ export default function DashboardPage() {
       if (me.data) {
         setMyReferral(me.data.referralCode);
         setBalance(me.data.balance);
+        setFirstName(me.data.firstName ?? '');
+        setLastName(me.data.lastName ?? '');
       }
     } catch (err) {
       console.error(err);
@@ -138,19 +141,51 @@ export default function DashboardPage() {
     0,
   );
 
+  const greeting =
+    new Date().getHours() < 12
+      ? 'Good morning'
+      : new Date().getHours() < 18
+      ? 'Good afternoon'
+      : 'Good evening';
+
+  const initials =
+    (firstName?.[0] ?? '').toUpperCase() + (lastName?.[0] ?? '').toUpperCase();
+
   return (
     <main className="min-h-screen px-6 py-8 max-w-6xl mx-auto">
-      <header className="flex items-center justify-between mb-10">
+      <header className="flex items-center justify-between mb-8">
         <Link href="/" className="text-2xl font-bold">
           Vault<span className="text-brand-500">ra</span>
         </Link>
-        <button
-          onClick={logout}
-          className="px-4 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition text-sm"
-        >
-          Log out
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 px-3 py-2 rounded-lg border border-white/10">
+            <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-xs font-bold">
+              {initials || '?'}
+            </div>
+            <div className="text-sm">
+              <p className="font-medium">
+                {firstName || 'User'} {lastName}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={logout}
+            className="px-4 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition text-sm"
+          >
+            Log out
+          </button>
+        </div>
       </header>
+
+      <section className="mb-8">
+        <h1 className="text-3xl font-bold">
+          {greeting}
+          {firstName ? `, ${firstName}` : ''} 👋
+        </h1>
+        <p className="text-slate-400 mt-1">
+          Here's what's happening with your Vaultra account.
+        </p>
+      </section>
 
       <section className="grid md:grid-cols-4 gap-5 mb-10">
         <StatCard label="Available balance" value={balance.toFixed(2)} />
@@ -177,7 +212,6 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Referral link */}
       {myReferral && (
         <section className="mb-10">
           <div className="bg-gradient-to-r from-brand-500/20 to-brand-700/10 border border-brand-500/30 rounded-2xl p-6">
@@ -207,7 +241,6 @@ export default function DashboardPage() {
         </section>
       )}
 
-      {/* Deposit wallets */}
       {wallets.length > 0 && (
         <section className="mb-10">
           <h2 className="text-xl font-semibold mb-2">Deposit crypto</h2>
@@ -295,7 +328,8 @@ export default function DashboardPage() {
                 <div>
                   <p className="font-semibold">{inv.plan.name}</p>
                   <p className="text-sm text-slate-400">
-                    Principal: {inv.principal} · Accrued: {Number(inv.accrued).toFixed(2)}
+                    Principal: {inv.principal} · Accrued:{' '}
+                    {Number(inv.accrued).toFixed(2)}
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
                     Matures: {new Date(inv.maturesAt).toLocaleDateString()}
@@ -343,7 +377,8 @@ export default function DashboardPage() {
                 className="w-full px-4 py-3 rounded-lg bg-slate-950 border border-white/10 focus:border-brand-500 outline-none"
               />
               <p className="text-xs text-slate-500">
-                Minimum: {modalPlan.minDeposit} · Your balance: {balance.toFixed(2)}
+                Minimum: {modalPlan.minDeposit} · Your balance:{' '}
+                {balance.toFixed(2)}
               </p>
             </div>
 

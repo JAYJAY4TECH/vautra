@@ -17,7 +17,13 @@ export class AuthService {
     return `VLT-${nanoid(8).toUpperCase()}`;
   }
 
-  async register(email: string, password: string, referralCode?: string) {
+  async register(
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+    referralCode?: string,
+  ) {
     const exists = await this.prisma.user.findUnique({ where: { email } });
     if (exists) throw new ConflictException('EMAIL_TAKEN');
 
@@ -33,6 +39,8 @@ export class AuthService {
       data: {
         email,
         passwordHash,
+        firstName,
+        lastName,
         referralCode: this.code(),
         referredById,
         wallet: { create: { address: `VLT-${nanoid(10).toUpperCase()}` } },
@@ -64,6 +72,8 @@ export class AuthService {
     return {
       id: user.id,
       email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
       referralCode: user.referralCode,
       walletAddress: user.wallet?.address,
       isAdmin: user.isAdmin,
