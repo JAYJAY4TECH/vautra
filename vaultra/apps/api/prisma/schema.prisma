@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum InvestmentStatus {
+  ACTIVE
+  MATURED
+}
+
+enum LedgerType {
+  DEPOSIT
+  ACCRUAL
+  REFERRAL
+  WITHDRAWAL
+  ADJUSTMENT
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String?
+  lastName     String?
+  referralCode String   @unique
+  referredById String?
+  referredBy   User?    @relation("Referrals", fields: [referredById], references: [id])
+  referrals    User[]   @relation("Referrals")
+  role         Role     @default(USER)
+  isAdmin      Boolean  @default(false)
+  subscribed   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  wallet      Wallet?
+  investments Investment[]
+  ledger      LedgerEntry[]
+  withdrawals Withdrawal[]
+
+  @@index([referredById])
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address   String   @unique
+  createdAt DateTime @default(now())
+}
+
+model WalletAddress {
+  id        String   @id @default(cuid())
+  coin      String   @unique
+  address   String
+  network   String?
+  updatedAt DateTime @updatedAt
+}
+
+model Plan {
+  id          String   @id @default(cuid())
+  name        String
+  tier        Int      @unique
+  ratePerDay  Decimal  @db.Decimal(10, 4)
+  lockDays    Int
+  minDeposit  Decimal  @db.Decimal(18, 2)
+  minWithdraw Decimal  @db.Decimal(18, 2)
+  referralPct Decimal  @db.Decimal(5, 2)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  investments Investment[]
+}
+
+model Investment {
+  id           String           @id @default(cuid())
+  userId       String
+  user         User             @relation(fields: [userId], references: [id])
+  planId       String
+  plan         Plan             @relation(fields: [planId], references: [id])
+  principal    Decimal          @db.Decimal(18, 2)
+  accrued      Decimal          @db.Decimal(18, 2) @default(0)
+  rateSnapshot Decimal          @db.Decimal(10, 4)
+  startedAt    DateTime         @default(now())
+  maturesAt    DateTime
+  status       InvestmentStatus @default(ACTIVE)
+
+  @@index([userId, status])
+}
+
+model LedgerEntry {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  type         LedgerType
+  amount       Decimal    @db.Decimal(18, 2)
+  balanceAfter Decimal    @db.Decimal(18, 2)
+  ref          String?
+  note         String?
+  createdAt    DateTime   @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Withdrawal {
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id])
+  amount     Decimal          @db.Decimal(18, 2)
+  status     WithdrawalStatus @default(PENDING)
+  reviewedBy String?
+  reviewedAt DateTime?
+  note       String?
+  createdAt  DateTime         @default(now())
+
+  @@index([status])
+}
