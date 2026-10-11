@@ -5,6 +5,15 @@ import { nanoid } from 'nanoid';
 import { PrismaService } from '../prisma/prisma.service';
 import { LedgerService } from '../ledger/ledger.service';
 
+type RegisterInput = {
+  email: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+  referralCode?: string;
+  subscribed?: boolean;
+};
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -17,22 +26,25 @@ export class AuthService {
     return `VLT-${nanoid(8).toUpperCase()}`;
   }
 
-  async register(email: string, password: string, referralCode?: string) {
-    const exists = await this.prisma.user.findUnique({ where: { email } });
+  async register(input: RegisterInput) {
+    const exists = await this.prisma.user.findUnique({ where: { email: input.email } });
     if (exists) throw new ConflictException('EMAIL_TAKEN');
 
-    const passwordHash = await argon2.hash(password);
+    const passwordHash = await argon2.hash(input.password);
 
     let referredById: string | undefined;
-    if (referralCode) {
-      const ref = await this.prisma.user.findUnique({ where: { referralCode } });
+    if (input.referralCode) {
+      const ref = await this.prisma.user.findUnique({ where: { referralCode: input.referralCode } });
       if (ref) referredById = ref.id;
     }
 
     const user = await this.prisma.user.create({
       data: {
-        email,
+        email: input.email,
         passwordHash,
+        firstName: input.firstName ?? null,
+        lastName: input.lastName ?? null,
+        subscribed: input.subscribed ?? false,
         referralCode: this.code(),
         referredById,
         wallet: { create: { address: `VLT-${nanoid(10).toUpperCase()}` } },
@@ -64,6 +76,8 @@ export class AuthService {
     return {
       id: user.id,
       email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
       referralCode: user.referralCode,
       walletAddress: user.wallet?.address,
       isAdmin: user.isAdmin,
