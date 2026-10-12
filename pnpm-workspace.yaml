@@ -1,0 +1,9 @@
+packages:
+  - "apps/*"
+allowBuilds:
+  '@nestjs/core': false
+  '@prisma/client': false
+  '@prisma/engines': false
+  argon2: false
+  esbuild: true
+  prisma: false
