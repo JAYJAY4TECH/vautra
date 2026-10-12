@@ -1,26 +1,19 @@
 ﻿{
-  "version": 2,
-  "installCommand": "corepack enable && pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm --filter api prisma generate && pnpm --filter api build && pnpm --filter web build",
-  "framework": null,
-  "builds": [
-    {
-      "src": "apps/web/package.json",
-      "use": "@vercel/next"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "api": {
+      "root": "apps/api",
+      "framework": "nestjs",
+      "buildCommand": "cd ../.. && corepack enable && pnpm install --frozen-lockfile && pnpm --filter api prisma generate && pnpm --filter api build",
+      "entrypoint": "src/vercel.ts"
     },
-    {
-      "src": "apps/api/src/vercel.ts",
-      "use": "@vercel/node"
+    "web": {
+      "root": "apps/web",
+      "framework": "nextjs"
     }
-  ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "apps/api/src/vercel.ts" },
-    { "src": "/(.*)",     "dest": "apps/web/$1" }
-  ],
-  "functions": {
-    "apps/api/src/vercel.ts": {
-      "maxDuration": 10,
-      "includeFiles": "apps/api/node_modules/.prisma/**"
-    }
-  }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": { "service": "api" } },
+    { "source": "/(.*)",     "destination": { "service": "web" } }
+  ]
 }
